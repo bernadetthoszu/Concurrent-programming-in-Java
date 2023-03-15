@@ -1,1 +1,41 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FieldRace</title>
+</head>
+<body>
+    <h1>FieldRace</h1>
+    <p>This is a simulation of a race, in which contestants can gather points at multiple checkpoints.</p>
+    <br>
+    <h2>Globally used variables:</h2>
+    <ul>
+        <li><span style="font-style: italic; font-weight: bold">isOn</span>: <span style="font-style: italic">AtomicBoolean</span>, true at first</li>
+        <li><span style="font-style: italic; font-weight: bold">scores</span>: <span style="font-style: italic">ConcurrentHashMap</span>, key is the ID of the player and the value is their current score</li>
+        <li><span style="font-style: italic; font-weight: bold">checkpointScores</span>: an array containing PALYER_COUNT number of <span style="font-style: italic">AtomicIntegers</span></li>
+        <li><span style="font-style: italic; font-weight: bold">checkpointQueues</span>: <span style="font-style: italic">synchronized list</span>, containing CHECKPOINT_COUNT number of <span style="font-style: italic">BlockingQueues</span> which convey <span style="font-style: italic">AtomicIntegers</span></li>
+    </ul>
+    <br>
+    <h2>The main program</h2>
+    <p>The FieldRace class contains the main program. It starts PLAYER_COUNT + CHECKPOINT_COUNT + 1 threads using an <span style="font-style: italic">ExecutorService</span>.</p>
+    <p>The +1 thread is responsible for logging intermediary scores in the format: <span style="color: orange">Scores: [1=494, 8=473, 4=456, 9=445, 3=430, 5=368, 7=367, 6=360, 0=353]</span> (for as long as isOn is true).</p>
+    <p>The main program waits 10 seconds, then sets isOn to false and stops the ExecutorService.</p>
+    <p>The final scores are showed on the screen and officially, the race is over.</p>
+    <br>
+    <h2>Contestants and locations</h2>
+    <h3>The repetitive behaviour of the locations:</h3>
+    <p>They pick an element from the BlockingQueue corresponding to the given checkpoint. If the elements won't arrive in 2 seconds to the checkpoint, we pick again an element/contestant.</p>
+    <p>Into the received AtomicInteger a random number, between 10 and 100, is placed.</p>
+    <p>The contestant gets notified (<span style="font-style: italic">notify</span>) via the same AtomicInteger object, that they received their scores at the given checkpoint/location.</p>
+    <br>
+    <h3>The repetitive behaviour of the contestants:</h3>
+    <p>They pick themselves a random checkpoint.</p>
+    <p>They spend between 0.5 and 2 seconds on their way to the checkpoint.</p>
+    <p>They place the corresponding checkpointScore into the BlockingQueue of the location.</p>
+    <p>The contestant waits (<span style="font-style: italic">wait</span>) for the location's notification that they were given the obained points. If the value of checkpointScore after the notification is still 0, or the notification hasn't arrived in a matter of 3 seconds, the player waits longer for their score. If the race has reached its end (isOn is set to false), the contestant doesn't wait anymore for the score, but instead leaves the checkpoint disappointedly.</p>
+    <p>The checkpointScore has to be reset to 0.</p>
+    <p>The performance of a player at a given checkpoint has to be logged in the console (<span style="color: orange">Player 2 got 50 points at checkpoint 8</span>) and the points received must be added to their overall score.</p>
+</body>
+</html>
